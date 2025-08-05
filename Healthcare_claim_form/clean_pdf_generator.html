@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean EDI 837 Claim Form PDF Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .generate-btn {
+            display: block;
+            width: 200px;
+            margin: 0 auto 20px;
+            padding: 12px 24px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .generate-btn:hover {
+            background: #219a52;
+        }
+
+        .info {
+            background: #e8f6f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #27ae60;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Clean EDI 837 Claim Form PDF Generator</h1>
+
+        <div class="info">
+            <strong>Parseable Format:</strong> This generates a PDF with clean text format that can be easily parsed by
+            the form autofill functionality. The text is structured for regex extraction.
+        </div>
+
+        <button class="generate-btn" onclick="generatePDF()">Generate Parseable PDF</button>
+    </div>
+
+    <script>
+        // Your original JSON data
+        const data = {
+            "stControlNumber": "0003",
+            "bhtTransactionId": "837PROVNPI01",
+            "bhtDate": "2025-08-04",
+            "bhtTime": "10:15",
+            "submitterName": "SENDING CLINIC",
+            "submitterId": "1234567890",
+            "submitterContactName": "DR",
+            "submitterPhoneNumber": "5551234567",
+            "receiverName": "INSURANCE CO",
+            "receiverId": "9876543210",
+            "providerName": "ABC CLINIC",
+            "providerNpi": "1234567893",
+            "providerEin": "123456789",
+            "providerAddressLine1": "100 HEALTH ST",
+            "providerAddressLine2": "ANYTOWN, CA 90210",
+            "providerCity": "ANYTOWN",
+            "providerState": "CA",
+            "providerZipCode": "90210",
+            "providerContactName": "PROVIDER CONTACT",
+            "providerPhoneNumber": "5559876543",
+            "subscriberFirstName": "JANE",
+            "subscriberLastName": "DOE",
+            "subscriberMemberId": "W197890911",
+            "subscriberDateOfBirth": "1980-01-01",
+            "subscriberGender": "Male",
+            "subscriberAddressLine1": "100 HEALTH ST",
+            "subscriberAddressLine2": "ANYTOWN, CA 90210",
+            "subscriberCity": "ANYTOWN",
+            "subscriberState": "CA",
+            "subscriberZipCode": "90210",
+            "patientRelationshipToSubscriber": "Grandchild",
+            "payerName": "INSURANCE CO",
+            "payerId": "5432109876",
+            "payerTypeCode": "CI",
+            "claimId": "CLM1003",
+            "totalChargeAmount": "600.00",
+            "placeOfServiceCode": "11",
+            "claimFilingIndicatorCode": "MA",
+            "acceptAssignment": true,
+            "benefitsAssignedToProvider": true,
+            "releaseOfInformation": "Y",
+            "serviceDateFrom": "2025-08-04",
+            "serviceDateTo": "2025-08-04",
+            "emergencyIndicator": false,
+            "diagnosisType": "ICD-10-CM",
+            "primaryDiagnosisCode": "J30.9",
+            "additionalDiagnosisCode1": "",
+            "additionalDiagnosisCode2": "",
+            "additionalDiagnosisCode3": "",
+            "additionalDiagnosisCode4": "",
+            "renderingProviderName": "SMITH DR",
+            "renderingProviderNpi": "3332211111",
+            "referringProviderName": "DR",
+            "referringProviderNpi": "4443322222",
+            "insuranceType": "13",
+            "groupNumber": "123456789",
+            "policyNumber": "POL123456789",
+            "priorAuthorizationNumber": "PA123456789",
+            "coverageStartDate": "2025-01-01",
+            "coverageEndDate": "2025-12-31",
+            "serviceLine1ProcedureCode": "99213",
+            "serviceLine1Modifier1": "",
+            "serviceLine1Modifier2": "",
+            "serviceLine1DiagnosisPointer": ["1"],
+            "serviceLine1ChargeAmount": "300.00",
+            "serviceLine1Quantity": "1",
+            "serviceLine1UnitOfMeasure": "UN",
+            "serviceLine1ServiceDate": "2025-08-04",
+            "serviceLine1PlaceOfService": "11",
+            "serviceLine1EmergencyService": false,
+            "serviceLine1RenderingProviderNpi": "3332211111",
+            "serviceLine2ProcedureCode": "99213",
+            "serviceLine2Modifier1": "",
+            "serviceLine2Modifier2": "",
+            "serviceLine2DiagnosisPointer": ["1"],
+            "serviceLine2ChargeAmount": "300.00",
+            "serviceLine2Quantity": "1",
+            "serviceLine2UnitOfMeasure": "UN",
+            "serviceLine2ServiceDate": "2025-08-04",
+            "serviceLine2PlaceOfService": "11",
+            "serviceLine2EmergencyService": false,
+            "serviceLine2RenderingProviderNpi": "3332212222",
+            "attachmentControlNumber": "ATT123456789",
+            "attachmentTypeCode": "OZ",
+            "attachmentTransmissionMethod": "EL",
+            "attachmentDescription": "Supporting documentation",
+            "otherPayerName": "SECONDARY INSURANCE",
+            "otherPayerId": "9876543210",
+            "otherPayerResponsibilityCode": "S",
+            "otherInsurancePaidAmount": "150.00",
+            "otherInsuranceCoverageActive": true,
+            "claimNoteCode": "ADD",
+            "claimNotes": "Services provided by different rendering providers to bypass CO-59.",
+            "patientSignatureOnFile": true,
+            "providerSignatureOnFile": true,
+            "dateSigned": "2025-08-04",
+            "confirmAccurate": true
+        };
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: 'a4',
+                compress: false
+            });
+
+            let yPos = 40;
+            const lineHeight = 15;
+            const margin = 40;
+
+            // Helper functions for clean text output
+            function field(label, val, req = false) {
+                if (yPos > 750) {
+                    doc.addPage();
+                    yPos = 40;
+                }
+                const star = req ? " *" : "";
+                doc.setFont("arial", "normal");
+                doc.setFontSize(11);
+                doc.text(`${label}${star} : ${val || ""}`, margin, yPos);
+                yPos += lineHeight;
+            }
+
+            function section(title) {
+                if (yPos > 730) {
+                    doc.addPage();
+                    yPos = 40;
+                }
+                yPos += 10;
+                doc.setFont("arial", "bold");
+                doc.setFontSize(12);
+                doc.text(title, margin, yPos);
+                yPos += 20;
+            }
+
+            // Generate PDF content with clean format for parsing
+
+            // Billing Info
+            section("Billing Information");
+            field("ST Control Number", data.stControlNumber, true);
+            field("BHT Transaction ID", data.bhtTransactionId, true);
+            field("BHT Date", data.bhtDate, true);
+            field("BHT Time", data.bhtTime);
+
+            // Submitter Information
+            section("Submitter Information");
+            field("Submitter Name", data.submitterName, true);
+            field("Submitter ID", data.submitterId, true);
+            field("Submitter Contact Name", data.submitterContactName);
+            field("Submitter Phone Number", data.submitterPhoneNumber);
+
+            // Receiver Information
+            section("Receiver Information");
+            field("Receiver Name", data.receiverName, true);
+            field("Receiver ID", data.receiverId, true);
+
+            // Billing Provider
+            section("Billing Provider");
+            field("Provider Name", data.providerName, true);
+            field("Provider NPI", data.providerNpi, true);
+            field("Provider EIN", data.providerEin, true);
+            field("Provider Address Line 1", data.providerAddressLine1, true);
+            field("Provider Address Line 2", data.providerAddressLine2);
+            field("Provider City", data.providerCity, true);
+            field("Provider State", data.providerState, true);
+            field("Provider ZIP Code", data.providerZipCode, true);
+            field("Provider Contact Name", data.providerContactName);
+            field("Provider Phone Number", data.providerPhoneNumber);
+
+            // Subscriber / Patient Information
+            section("Subscriber / Patient Information");
+            field("Subscriber First Name", data.subscriberFirstName, true);
+            field("Subscriber Last Name", data.subscriberLastName, true);
+            field("Subscriber Member ID", data.subscriberMemberId, true);
+            field("Subscriber Date of Birth", data.subscriberDateOfBirth, true);
+            field("Subscriber Gender", data.subscriberGender, true);
+            field("Subscriber Address Line 1", data.subscriberAddressLine1, true);
+            field("Subscriber Address Line 2", data.subscriberAddressLine2);
+            field("Subscriber City", data.subscriberCity, true);
+            field("Subscriber State", data.subscriberState, true);
+            field("Subscriber ZIP Code", data.subscriberZipCode, true);
+            field("Patient Relationship to Subscriber", data.patientRelationshipToSubscriber, true);
+
+            // Payer Information
+            section("Payer Information");
+            field("Payer Name", data.payerName, true);
+            field("Payer ID", data.payerId, true);
+            field("Payer Type Code", data.payerTypeCode, true);
+
+            // Claim Information
+            section("Claim Information");
+            field("Claim ID", data.claimId, true);
+            field("Total Charge Amount", data.totalChargeAmount, true);
+            field("Place of Service Code", data.placeOfServiceCode, true);
+            field("Claim Filing Indicator Code", data.claimFilingIndicatorCode, true);
+            field("Accept Assignment?", data.acceptAssignment ? "Yes" : "No", true);
+            field("Benefits Assigned to Provider?", data.benefitsAssignedToProvider ? "Yes" : "No", true);
+            field("Release of Information?", data.releaseOfInformation, true);
+            field("Service Date From", data.serviceDateFrom, true);
+            field("Service Date To", data.serviceDateTo);
+            field("Emergency Indicator", data.emergencyIndicator ? "Yes" : "No");
+
+            // Diagnosis Information
+            section("Diagnosis Information");
+            field("Diagnosis Type", data.diagnosisType, true);
+            field("Primary Diagnosis Code", data.primaryDiagnosisCode, true);
+            field("Additional Diagnosis Code 1", data.additionalDiagnosisCode1);
+            field("Additional Diagnosis Code 2", data.additionalDiagnosisCode2);
+            field("Additional Diagnosis Code 3", data.additionalDiagnosisCode3);
+            field("Additional Diagnosis Code 4", data.additionalDiagnosisCode4);
+
+            // Rendering Provider Info
+            section("Rendering Provider Info");
+            field("Rendering Provider Name", data.renderingProviderName, true);
+            field("Rendering Provider NPI", data.renderingProviderNpi, true);
+            field("Referring Provider Name", data.referringProviderName);
+            field("Referring Provider NPI", data.referringProviderNpi);
+
+            // Insurance Information
+            section("Insurance Information");
+            field("Insurance Type", data.insuranceType, true);
+            field("Group Number", data.groupNumber);
+            field("Policy Number", data.policyNumber);
+            field("Prior Authorization Number", data.priorAuthorizationNumber);
+            field("Coverage Start Date", data.coverageStartDate);
+            field("Coverage End Date", data.coverageEndDate);
+
+            // Service Lines
+            section("Service Lines");
+
+            // Service Line 1
+            field("Service Line 1: Procedure Code (CPT/HCPCS)", data.serviceLine1ProcedureCode, true);
+            field("Service Line 1: Modifier 1", data.serviceLine1Modifier1);
+            field("Service Line 1: Modifier 2", data.serviceLine1Modifier2);
+            field("Service Line 1: Diagnosis Pointer(s)", data.serviceLine1DiagnosisPointer.join(", "), true);
+            field("Service Line 1: Charge Amount", data.serviceLine1ChargeAmount, true);
+            field("Service Line 1: Quantity", data.serviceLine1Quantity, true);
+            field("Service Line 1: Unit of Measure", data.serviceLine1UnitOfMeasure);
+            field("Service Line 1: Service Date", data.serviceLine1ServiceDate, true);
+            field("Service Line 1: Place of Service", data.serviceLine1PlaceOfService);
+            field("Service Line 1: Emergency Service?", data.serviceLine1EmergencyService ? "Yes" : "No");
+            field("Service Line 1: Rendering Provider NPI", data.serviceLine1RenderingProviderNpi);
+
+            // Service Line 2
+            field("Service Line 2: Procedure Code (CPT/HCPCS)", data.serviceLine2ProcedureCode, true);
+            field("Service Line 2: Modifier 1", data.serviceLine2Modifier1);
+            field("Service Line 2: Modifier 2", data.serviceLine2Modifier2);
+            field("Service Line 2: Diagnosis Pointer(s)", data.serviceLine2DiagnosisPointer.join(", "), true);
+            field("Service Line 2: Charge Amount", data.serviceLine2ChargeAmount, true);
+            field("Service Line 2: Quantity", data.serviceLine2Quantity, true);
+            field("Service Line 2: Unit of Measure", data.serviceLine2UnitOfMeasure);
+            field("Service Line 2: Service Date", data.serviceLine2ServiceDate, true);
+            field("Service Line 2: Place of Service", data.serviceLine2PlaceOfService);
+            field("Service Line 2: Emergency Service?", data.serviceLine2EmergencyService ? "Yes" : "No");
+            field("Service Line 2: Rendering Provider NPI", data.serviceLine2RenderingProviderNpi);
+
+            // Claim Attachments
+            section("Claim Attachments");
+            field("Attachment Control Number", data.attachmentControlNumber);
+            field("Attachment Type Code", data.attachmentTypeCode);
+            field("Attachment Transmission Method", data.attachmentTransmissionMethod);
+            field("Attachment Description", data.attachmentDescription);
+
+            // Other Insurance Info
+            section("Other Insurance Info");
+            field("Other Payer Name", data.otherPayerName);
+            field("Other Payer ID", data.otherPayerId);
+            field("Other Payer Responsibility Code", data.otherPayerResponsibilityCode);
+            field("Other Insurance Paid Amount", data.otherInsurancePaidAmount);
+            field("Other Insurance Coverage Active?", data.otherInsuranceCoverageActive ? "Yes" : "No");
+
+            // Notes
+            section("Notes");
+            field("Claim Note Code", data.claimNoteCode);
+            field("Claim Notes", data.claimNotes);
+
+            // Declaration & Authorization
+            section("Declaration & Authorization");
+            field("Patient Signature on File", data.patientSignatureOnFile ? "Yes" : "No", true);
+            field("Provider Signature on File", data.providerSignatureOnFile ? "Yes" : "No", true);
+            field("Date Signed", data.dateSigned, true);
+
+            // Acknowledgment
+            section("Acknowledgment");
+            field("I confirm the above information is accurate", data.confirmAccurate ? "Yes" : "No", true);
+
+            // Save
+            doc.save('EDI_837_Parseable_Form.pdf');
+        }
+    </script>
+</body>
+
+</html>

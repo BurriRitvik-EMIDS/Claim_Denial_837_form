@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test PDF for Healthcare Claim Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.4;
+            font-size: 12px;
+        }
+
+        .field {
+            margin-bottom: 8px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+        }
+
+        @media print {
+            body {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="section">
+        <div class="section-title">Billing Information</div>
+        <div class="field">ST Control Number * : 0003</div>
+        <div class="field">BHT Transaction ID * : 837PROVNPI01</div>
+        <div class="field">BHT Date * : 2025-08-04</div>
+        <div class="field">BHT Time : 10:15</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Submitter Information</div>
+        <div class="field">Submitter Name * : SENDING CLINIC</div>
+        <div class="field">Submitter ID * : 1234567890</div>
+        <div class="field">Submitter Contact Name : DR</div>
+        <div class="field">Submitter Phone Number : 5551234567</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Receiver Information</div>
+        <div class="field">Receiver Name * : INSURANCE CO</div>
+        <div class="field">Receiver ID * : 9876543210</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Billing Provider</div>
+        <div class="field">Provider Name * : ABC CLINIC</div>
+        <div class="field">Provider NPI * : 1234567893</div>
+        <div class="field">Provider EIN * : 123456789</div>
+        <div class="field">Provider Address Line 1 * : 100 HEALTH ST</div>
+        <div class="field">Provider Address Line 2 : ANYTOWN, CA 90210</div>
+        <div class="field">Provider City * : ANYTOWN</div>
+        <div class="field">Provider State * : CA</div>
+        <div class="field">Provider ZIP Code * : 90210</div>
+        <div class="field">Provider Contact Name : PROVIDER CONTACT</div>
+        <div class="field">Provider Phone Number : 5559876543</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Subscriber / Patient Information</div>
+        <div class="field">Subscriber First Name * : JANE</div>
+        <div class="field">Subscriber Last Name * : DOE</div>
+        <div class="field">Subscriber Member ID * : W197890911</div>
+        <div class="field">Subscriber Date of Birth * : 1980-01-01</div>
+        <div class="field">Subscriber Gender * : Male</div>
+        <div class="field">Subscriber Address Line 1 * : 100 HEALTH ST</div>
+        <div class="field">Subscriber Address Line 2 : ANYTOWN, CA 90210</div>
+        <div class="field">Subscriber City * : ANYTOWN</div>
+        <div class="field">Subscriber State * : CA</div>
+        <div class="field">Subscriber ZIP Code * : 90210</div>
+        <div class="field">Patient Relationship to Subscriber * : Grandchild</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Payer Information</div>
+        <div class="field">Payer Name * : INSURANCE CO</div>
+        <div class="field">Payer ID * : 5432109876</div>
+        <div class="field">Payer Type Code * : CI</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Claim Information</div>
+        <div class="field">Claim ID * : CLM1003</div>
+        <div class="field">Total Charge Amount * : 600.00</div>
+        <div class="field">Place of Service Code * : 11</div>
+        <div class="field">Claim Filing Indicator Code * : MA</div>
+        <div class="field">Accept Assignment? * : Yes</div>
+        <div class="field">Benefits Assigned to Provider? * : Yes</div>
+        <div class="field">Release of Information? * : Y</div>
+        <div class="field">Service Date From * : 2025-08-04</div>
+        <div class="field">Service Date To : 2025-08-04</div>
+        <div class="field">Emergency Indicator : No</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Diagnosis Information</div>
+        <div class="field">Diagnosis Type * : ICD-10-CM</div>
+        <div class="field">Primary Diagnosis Code * : J30.9</div>
+        <div class="field">Additional Diagnosis Code 1 : </div>
+        <div class="field">Additional Diagnosis Code 2 : </div>
+        <div class="field">Additional Diagnosis Code 3 : </div>
+        <div class="field">Additional Diagnosis Code 4 : </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Rendering Provider Info</div>
+        <div class="field">Rendering Provider Name * : SMITH DR</div>
+        <div class="field">Rendering Provider NPI * : 3332211111</div>
+        <div class="field">Referring Provider Name : DR</div>
+        <div class="field">Referring Provider NPI : 4443322222</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Insurance Information</div>
+        <div class="field">Insurance Type * : 13</div>
+        <div class="field">Group Number : 123456789</div>
+        <div class="field">Policy Number : POL123456789</div>
+        <div class="field">Prior Authorization Number : PA123456789</div>
+        <div class="field">Coverage Start Date : 2025-01-01</div>
+        <div class="field">Coverage End Date : 2025-12-31</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Service Lines</div>
+        <div class="field">Service Line 1: Procedure Code (CPT/HCPCS) * : 99213</div>
+        <div class="field">Service Line 1: Modifier 1 : </div>
+        <div class="field">Service Line 1: Modifier 2 : </div>
+        <div class="field">Service Line 1: Diagnosis Pointer(s) * : 1</div>
+        <div class="field">Service Line 1: Charge Amount * : 300.00</div>
+        <div class="field">Service Line 1: Quantity * : 1</div>
+        <div class="field">Service Line 1: Unit of Measure : UN</div>
+        <div class="field">Service Line 1: Service Date * : 2025-08-04</div>
+        <div class="field">Service Line 1: Place of Service : 11</div>
+        <div class="field">Service Line 1: Emergency Service? : No</div>
+        <div class="field">Service Line 1: Rendering Provider NPI : 3332211111</div>
+        <div class="field">Service Line 2: Procedure Code (CPT/HCPCS) * : 99213</div>
+        <div class="field">Service Line 2: Modifier 1 : </div>
+        <div class="field">Service Line 2: Modifier 2 : </div>
+        <div class="field">Service Line 2: Diagnosis Pointer(s) * : 1</div>
+        <div class="field">Service Line 2: Charge Amount * : 300.00</div>
+        <div class="field">Service Line 2: Quantity * : 1</div>
+        <div class="field">Service Line 2: Unit of Measure : UN</div>
+        <div class="field">Service Line 2: Service Date * : 2025-08-04</div>
+        <div class="field">Service Line 2: Place of Service : 11</div>
+        <div class="field">Service Line 2: Emergency Service? : No</div>
+        <div class="field">Service Line 2: Rendering Provider NPI : 3332212222</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Claim Attachments</div>
+        <div class="field">Attachment Control Number : ATT123456789</div>
+        <div class="field">Attachment Type Code : OZ</div>
+        <div class="field">Attachment Transmission Method : EL</div>
+        <div class="field">Attachment Description : Supporting documentation</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Other Insurance Info</div>
+        <div class="field">Other Payer Name : SECONDARY INSURANCE</div>
+        <div class="field">Other Payer ID : 9876543210</div>
+        <div class="field">Other Payer Responsibility Code : S</div>
+        <div class="field">Other Insurance Paid Amount : 150.00</div>
+        <div class="field">Other Insurance Coverage Active? : Yes</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Notes</div>
+        <div class="field">Claim Note Code : ADD</div>
+        <div class="field">Claim Notes : Services provided by different rendering providers to bypass CO-59.</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Declaration & Authorization</div>
+        <div class="field">Patient Signature on File * : Yes</div>
+        <div class="field">Provider Signature on File * : Yes</div>
+        <div class="field">Date Signed * : 2025-08-04</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Acknowledgment</div>
+        <div class="field">I confirm the above information is accurate * : Yes</div>
+    </div>
+</body>
+
+</html>

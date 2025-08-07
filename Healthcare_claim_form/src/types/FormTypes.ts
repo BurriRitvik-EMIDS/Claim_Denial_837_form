@@ -143,10 +143,11 @@ export interface FormFieldProps {
   onChange: (name: string, value: string | boolean | string[]) => void;
   type?: string;
   required?: boolean;
-  options?: Array<{value: string, label: string}>;
+  options?: Array<{ value: string, label: string }>;
   placeholder?: string;
   className?: string;
   fieldType?: 'text' | 'select' | 'checkbox' | 'textarea' | 'date' | 'checkboxGroup';
+  step?: string; // Added for number input fields
 }
 
 export interface CheckboxGroupProps {
@@ -154,7 +155,7 @@ export interface CheckboxGroupProps {
   name: string;
   value: string[];
   onChange: (name: string, value: string[]) => void;
-  options: Array<{value: string, label: string}>;
+  options: Array<{ value: string, label: string }>;
   required?: boolean;
   className?: string;
 }

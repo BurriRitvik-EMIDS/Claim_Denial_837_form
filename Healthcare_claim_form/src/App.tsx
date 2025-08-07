@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FileText, Send, RotateCcw } from 'lucide-react';
 import { FormData } from './types/FormTypes';
 import { FormSection } from './components/FormSection';
 import { FormField } from './components/FormField';
 import { FileUpload } from './components/FileUpload';
+import { ResultsPage } from './components/ResultsPage';
+import { LoadingScreen } from './components/LoadingScreen';
+import { parseAgentResponse, ParsedResponse } from './utils/responseParser';
 import {
   getInitialFormData,
   saveFormToSession,
@@ -51,6 +54,31 @@ function App() {
     requiredFields: 0,
     completedRequired: 0
   });
+  // --- AGENT RESPONSE STATE ---
+  const [agentResponse, setAgentResponse] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<{
+    sessionCreated: boolean;
+    agentRun: boolean;
+    errors: string[];
+  }>({
+    sessionCreated: false,
+    agentRun: false,
+    errors: []
+  });
+
+
+
+  // --- RESULTS PAGE STATE ---
+  const [showResultsPage, setShowResultsPage] = useState(false);
+  const [parsedResponse, setParsedResponse] = useState<ParsedResponse | null>(null);
+
+  // --- LOADING SCREEN STATE ---
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
+  const [loadingStep, setLoadingStep] = useState<'session' | 'agent' | 'complete'>('session');
+
+
+
+
 
   // Load form data from session on mount
   useEffect(() => {
@@ -140,22 +168,176 @@ function App() {
     }
 
     setIsSubmitting(true);
+    setAgentResponse(null);
+    setApiStatus({
+      sessionCreated: false,
+      agentRun: false,
+      errors: []
+    });
 
-    // Simulate API call
-    setTimeout(() => {
-      setSubmittedData(JSON.stringify(formData, null, 2));
-      setIsSubmitting(false);
-    }, 1000);
+    // Show loading screen
+    setShowLoadingScreen(true);
+    setLoadingStep('session');
+
+    // Save the submitted data for display
+    setSubmittedData(JSON.stringify(formData, null, 2));
+
+    try {
+      console.log('Starting API calls...');
+
+
+
+      // 1. Create session using proxy to avoid CORS
+      console.log('Creating session...');
+
+      // Generate unique session ID with timestamp
+      const timestamp = Date.now();
+      const sessionId = `s_${timestamp}`;
+      const userId = `u_${timestamp}`;
+
+      console.log('Generated session ID:', sessionId);
+      console.log('Generated user ID:', userId);
+
+      const sessionRes = await fetch(`/api/apps/lead_qualification_agent/users/${userId}/sessions/${sessionId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Session response status:', sessionRes.status);
+      console.log('Session response headers:', sessionRes.headers);
+
+      if (!sessionRes.ok) {
+        const errorText = await sessionRes.text();
+        throw new Error(`Session creation failed: ${sessionRes.status} - ${errorText}`);
+      }
+
+      const sessionData = await sessionRes.json();
+      console.log('Session created successfully:', sessionData);
+      setApiStatus(prev => ({ ...prev, sessionCreated: true }));
+
+      // Update loading step to agent processing
+      setLoadingStep('agent');
+
+      // 2. Run agent
+      console.log('Running agent...');
+      console.log('Using session ID:', sessionId);
+      console.log('Using user ID:', userId);
+
+      // 2. Run agent using proxy to avoid CORS
+      const runRes = await fetch('/api/run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          appName: "lead_qualification_agent",
+          userId: userId,
+          sessionId: sessionId,
+          newMessage: {
+            parts: [
+              {
+                text: JSON.stringify(formData)
+              }
+            ],
+            role: "user"
+          }
+        })
+      });
+
+      console.log('Agent response status:', runRes.status);
+      console.log('Agent response headers:', runRes.headers);
+
+      if (!runRes.ok) {
+        const errorText = await runRes.text();
+        throw new Error(`Agent run failed: ${runRes.status} - ${errorText}`);
+      }
+
+      const runData = await runRes.json();
+      console.log('Agent response data:', runData);
+      setApiStatus(prev => ({ ...prev, agentRun: true })); // Set agentRun to true before setting agentResponse
+      setAgentResponse(JSON.stringify(runData, null, 2));
+
+      // Update loading step to complete
+      setLoadingStep('complete');
+
+      // Parse the response and prepare for results page
+      const parsed = parseAgentResponse(JSON.stringify(runData, null, 2));
+      setParsedResponse(parsed);
+
+      // Show success message
+      console.log('✅ All API calls completed successfully!');
+
+    } catch (err: any) {
+      console.error('API Error:', err);
+      const errorMessage = `Error: ${err?.message || 'Unknown error'}\n\nStack: ${err?.stack || 'No stack trace'}`;
+      setAgentResponse(errorMessage);
+      setApiStatus(prev => ({
+        ...prev,
+        errors: [...prev.errors, err?.message || 'Unknown error']
+      }));
+
+      // Hide loading screen on error
+      setShowLoadingScreen(false);
+    }
+
+    setIsSubmitting(false);
   };
 
   const handleReset = () => {
     setFormData(getInitialFormData());
     setUploadedFile(null);
     setSubmittedData('');
+    setAgentResponse(null);
     setValidationErrors({});
     setShowValidation(false);
+    setApiStatus({
+      sessionCreated: false,
+      agentRun: false,
+      errors: []
+    });
+    setShowResultsPage(false);
+    setParsedResponse(null);
+    setShowLoadingScreen(false);
+    setLoadingStep('session');
     sessionStorage.removeItem('healthcareClaimForm');
   };
+
+  const handleBackToForm = () => {
+    setShowResultsPage(false);
+    setParsedResponse(null);
+  };
+
+  const handleLoadingComplete = () => {
+    setShowLoadingScreen(false);
+    setShowResultsPage(true);
+  };
+
+
+
+  // Show loading screen if processing
+  if (showLoadingScreen) {
+    return (
+      <LoadingScreen
+        currentStep={loadingStep}
+        onComplete={handleLoadingComplete}
+      />
+    );
+  }
+
+  // Show results page if available
+  if (showResultsPage && parsedResponse) {
+    return (
+      <ResultsPage
+        validationStatus={parsedResponse.validationStatus}
+        results={parsedResponse.results}
+        onBack={handleBackToForm}
+        processingTime={parsedResponse.processingTime}
+        agentMessages={parsedResponse.agentMessages}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -1316,17 +1498,7 @@ function App() {
             </div>
           </div>
 
-          {/* JSON Response Display */}
-          {submittedData && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Form Submission Response (JSON)</h3>
-              <div className="bg-gray-50 rounded-md p-4 overflow-auto max-h-96">
-                <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-                  {submittedData}
-                </pre>
-              </div>
-            </div>
-          )}
+
         </form>
       </div>
     </div>

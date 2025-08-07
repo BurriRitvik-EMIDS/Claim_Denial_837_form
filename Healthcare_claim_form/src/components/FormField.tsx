@@ -7,20 +7,24 @@ interface ExtendedFormFieldProps extends FormFieldProps {
   showValidation?: boolean;
 }
 
-export const FormField: React.FC<ExtendedFormFieldProps> = ({
-  label,
-  name,
-  value,
-  onChange,
-  type = 'text',
-  required = false,
-  options,
-  placeholder,
-  className = '',
-  fieldType = 'text',
-  validation,
-  showValidation = false
-}) => {
+export type { ExtendedFormFieldProps };
+
+export const FormField: React.FC<ExtendedFormFieldProps> = (props: ExtendedFormFieldProps) => {
+  const {
+    label,
+    name,
+    value,
+    onChange,
+    type = 'text',
+    required = false,
+    options,
+    placeholder,
+    className = '',
+    fieldType = 'text',
+    validation,
+    showValidation = false,
+    step
+  } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [hasBeenTouched, setHasBeenTouched] = useState(false);
   const [localValidation, setLocalValidation] = useState<ValidationResult | null>(null);
@@ -196,6 +200,7 @@ export const FormField: React.FC<ExtendedFormFieldProps> = ({
           required={required}
           placeholder={placeholder}
           className={getInputClasses()}
+          {...(step ? { step } : {})} // <-- pass step if present
         />
       )}
 

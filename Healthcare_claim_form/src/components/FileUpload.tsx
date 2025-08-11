@@ -63,7 +63,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, uploadedFi
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-        PDF Upload
+        Upload EDI 837 Document
       </h2>
 
       {!uploadedFile ? (
@@ -74,9 +74,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, uploadedFi
           onClick={() => fileInputRef.current?.click()}
         >
           <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-lg font-medium text-gray-900 mb-2">Upload PDF Document</p>
+          <p className="text-lg font-medium text-gray-900 mb-2">Upload PDF</p>
           <p className="text-sm text-gray-500 mb-4">
-            Drag and drop your PDF here, or click to browse
+            Drag and drop your Claim file here, or click to browse
           </p>
           <button
             type="button"

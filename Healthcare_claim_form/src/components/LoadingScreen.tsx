@@ -1,177 +1,195 @@
 import React from 'react';
-import {
-  FileText,
-  CheckCircle,
-  Clock,
-  Shield,
-  Loader2
-} from 'lucide-react';
+import { CheckCircle, Clock, Loader2 } from 'lucide-react';
 
-interface LoadingScreenProps {
-  currentStep: 'session' | 'agent' | 'complete';
+interface LoadingModalProps {
+  isOpen: boolean;
   onComplete: () => void;
+  // When true, the modal will pause at the 'recommender' step until isAgentDone becomes true
+  awaitExternalComplete?: boolean;
+  // External signal that the agent run has finished and response is available
+  isAgentDone?: boolean;
 }
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ currentStep, onComplete }) => {
+interface ProcessStep {
+  id: string;
+  label: string;
+  status: 'pending' | 'loading' | 'completed';
+}
+
+export const LoadingModal: React.FC<LoadingModalProps> = ({ isOpen, onComplete, awaitExternalComplete = true, isAgentDone = false }) => {
+  const [steps, setSteps] = React.useState<ProcessStep[]>([
+    { id: 'session', label: 'Session Creation', status: 'pending' },
+    { id: 'validator', label: 'Lead Validator Agent', status: 'pending' },
+    { id: 'recommender', label: 'Action Recommender Agent', status: 'pending' }
+  ]);
+  const [hasStarted, setHasStarted] = React.useState(false);
+
   React.useEffect(() => {
-    if (currentStep === 'complete') {
-      // Add a small delay to show the completion state before redirecting
-      const timer = setTimeout(() => {
+    if (!isOpen) {
+      // Reset state when modal closes
+      setHasStarted(false);
+      return;
+    }
+
+    // Only reset steps if we haven't started the process yet
+    if (!hasStarted) {
+      setSteps([
+        { id: 'session', label: 'Session Creation', status: 'pending' },
+        { id: 'validator', label: 'Lead Validator Agent', status: 'pending' },
+        { id: 'recommender', label: 'Action Recommender Agent', status: 'pending' }
+      ]);
+      setHasStarted(true);
+    }
+
+    const processSteps = async () => {
+      // Step 1: Session Creation
+      setSteps(prev => prev.map(step => 
+        step.id === 'session' ? { ...step, status: 'loading' } : step
+      ));
+      
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setSteps(prev => prev.map(step => 
+        step.id === 'session' ? { ...step, status: 'completed' } : step
+      ));
+
+      // Step 2: Lead Validator Agent
+      setSteps(prev => prev.map(step => 
+        step.id === 'validator' ? { ...step, status: 'loading' } : step
+      ));
+      
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      setSteps(prev => prev.map(step => 
+        step.id === 'validator' ? { ...step, status: 'completed' } : step
+      ));
+
+      // Step 3: Action Recommender Agent
+      setSteps(prev => prev.map(step => 
+        step.id === 'recommender' ? { ...step, status: 'loading' } : step
+      ));
+      
+      if (!awaitExternalComplete) {
+        // Auto-complete after a short delay when not awaiting external signal
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setSteps(prev => prev.map(step => 
+          step.id === 'recommender' ? { ...step, status: 'completed' } : step
+        ));
+        await new Promise(resolve => setTimeout(resolve, 500));
         onComplete();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentStep, onComplete]);
+      }
+    };
 
-  const steps = [
-    {
-      id: 'session',
-      title: 'Creating Session',
-      description: 'Initializing secure connection for claim processing',
-      icon: Shield,
-      status: currentStep === 'session' ? 'loading' : currentStep === 'agent' || currentStep === 'complete' ? 'complete' : 'pending'
-    },
-    {
-      id: 'agent',
-      title: 'AI Agent Processing',
-      description: 'Lead Validator and Action Recommender agents analyzing claim',
-      icon: FileText,
-      status: currentStep === 'agent' ? 'loading' : currentStep === 'complete' ? 'complete' : 'pending'
-    },
-    {
-      id: 'complete',
-      title: 'Analysis Complete',
-      description: 'Validation results ready for review',
-      icon: CheckCircle,
-      status: currentStep === 'complete' ? 'complete' : 'pending'
+    if (!hasStarted) {
+      processSteps();
     }
-  ];
+  }, [isOpen, onComplete, awaitExternalComplete, hasStarted]);
 
-  const getStepIcon = (step: typeof steps[0]) => {
-    const IconComponent = step.icon;
-    if (step.status === 'loading') {
-      return <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />;
-    } else if (step.status === 'complete') {
-      return <CheckCircle className="h-6 w-6 text-green-500" />;
-    } else {
-      return <Clock className="h-6 w-6 text-gray-400" />;
+  // When awaiting external completion, finish the last step when agent is done
+  React.useEffect(() => {
+    if (!isOpen || !awaitExternalComplete || !hasStarted) return;
+    if (isAgentDone) {
+      setSteps(prev => prev.map(step => 
+        step.id === 'recommender' ? { ...step, status: 'completed' } : step
+      ));
+      const t = setTimeout(() => onComplete(), 500);
+      return () => clearTimeout(t);
+    }
+  }, [isAgentDone, isOpen, awaitExternalComplete, onComplete, hasStarted]);
+
+  if (!isOpen) return null;
+
+  const getStepIcon = (status: ProcessStep['status']) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />;
+      case 'loading':
+        return <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500 animate-spin" />;
+      default:
+        return <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />;
     }
   };
 
-  const getStepClasses = (step: typeof steps[0]) => {
-    if (step.status === 'loading') {
-      return 'bg-blue-50 border-blue-200';
-    } else if (step.status === 'complete') {
-      return 'bg-green-50 border-green-200';
-    } else {
-      return 'bg-gray-50 border-gray-200';
+  const getStepStyles = (status: ProcessStep['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-50 border-green-200 text-green-800';
+      case 'loading':
+        return 'bg-amber-50 border-amber-200 text-amber-800';
+      default:
+        return 'bg-gray-50 border-gray-200 text-gray-600';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="max-w-lg w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      {/* Glass morphism backdrop */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+      
+      {/* Modal content */}
+      <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-4 sm:p-6 lg:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <div className="relative">
-              <FileText className="h-10 w-10 text-blue-600" />
-              {currentStep === 'agent' && (
-                <div className="absolute -top-1 -right-1">
-                  <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
-                </div>
-              )}
-            </div>
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full mb-3 sm:mb-4">
+            <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 animate-spin" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Processing Your Claim</h1>
-          <p className="text-sm text-gray-600">
-            Our AI agents are analyzing your EDI 837 claim
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+            Processing Claim Validation
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-600">
+            AI agents are analyzing your healthcare claim data
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="space-y-3 mb-6">
-          {steps.map((step, index) => (
+        <div className="space-y-3 sm:space-y-4">
+          {steps.map((step) => (
             <div
               key={step.id}
-              className={`rounded-lg border p-4 transition-all duration-500 ${getStepClasses(step)}`}
+              className={`flex items-center p-3 sm:p-4 rounded-lg border transition-all duration-300 ${getStepStyles(step.status)}`}
             >
-              <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  {getStepIcon(step)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className={`text-sm font-semibold ${step.status === 'loading' ? 'text-blue-800' :
-                      step.status === 'complete' ? 'text-green-800' : 'text-gray-600'
-                    }`}>
-                    {step.title}
-                  </h3>
-                  <p className={`text-xs mt-1 ${step.status === 'loading' ? 'text-blue-600' :
-                      step.status === 'complete' ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                    {step.description}
-                  </p>
-                </div>
-                {step.status === 'loading' && (
-                  <div className="flex-shrink-0">
-                    <div className="flex space-x-1">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
-                )}
+              <div className="flex-shrink-0 mr-3 sm:mr-4">
+                {getStepIcon(step.status)}
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm sm:text-base truncate">{step.label}</p>
+                <p className="text-xs mt-1 opacity-75">
+                  {step.status === 'completed' && 'Completed successfully'}
+                  {step.status === 'loading' && 'Processing...'}
+                  {step.status === 'pending' && 'Waiting to start'}
+                </p>
+              </div>
+              {step.status === 'loading' && (
+                <div className="flex-shrink-0">
+                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                </div>
+              )}
             </div>
           ))}
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-6">
+        <div className="mt-4 sm:mt-6">
           <div className="flex justify-between text-xs text-gray-600 mb-2">
             <span>Progress</span>
-            <span>
-              {currentStep === 'session' ? '33%' :
-                currentStep === 'agent' ? '66%' : '100%'}
-            </span>
+            <span>{Math.round((steps.filter(s => s.status === 'completed').length / steps.length) * 100)}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-1000 ease-out"
-              style={{
-                width: currentStep === 'session' ? '33%' :
-                  currentStep === 'agent' ? '66%' : '100%'
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
+              style={{ 
+                width: `${(steps.filter(s => s.status === 'completed').length / steps.length) * 100}%` 
               }}
-            ></div>
+            />
           </div>
         </div>
 
-        {/* Status Message */}
-        <div className="text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-gray-200 shadow-sm">
-            <p className="text-sm text-gray-700 font-medium">
-              {currentStep === 'session' && 'Creating secure session...'}
-              {currentStep === 'agent' && 'AI agents analyzing claim data...'}
-              {currentStep === 'complete' && 'Analysis complete! Preparing results...'}
-            </p>
-            {currentStep === 'agent' && (
-              <p className="text-xs text-gray-500 mt-1">
-                Validating against industry standards
-              </p>
-            )}
-          </div>
+        {/* Footer */}
+        <div className="mt-4 sm:mt-6 text-center">
+          <p className="text-xs text-gray-500">
+            This process typically takes 2-4 seconds
+          </p>
         </div>
-
-        {/* Loading Animation */}
-        {currentStep === 'agent' && (
-          <div className="mt-4 text-center">
-            <div className="inline-flex items-center space-x-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
